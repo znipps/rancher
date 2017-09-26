@@ -36,8 +36,9 @@ init_new_data_dir()
     local pidfile="${DATADIR}/mysql.pid"
 
     # If a blank directory is bind mounted, configure it.
-    echo "Running mysql_install_db..."
-    mysql_install_db --user=mysql --datadir="${DATADIR}" --rpm --basedir=/usr
+    echo "Initializing DB..."
+    mysqld --initialize-insecure 
+    echo "Initialized DB..."
 
     echo "Starting MySQL to initialize..."
     mysqld --user=mysql --datadir="${DATADIR}" --skip-networking --basedir=/usr --socket=/var/run/mysqld/mysqld.sock --pid-file="${pidfile}" &
@@ -100,6 +101,11 @@ if [ "$(grep /var/lib/mysql /proc/mounts|cut -d' ' -f3)" = "vboxsf" ]; then
     usermod -u ${uid} mysql
     chown -R mysql /var/run/mysqld
     chown -R mysql /var/log/mysql
+fi
+
+if [ ! -d /var/run/mysqld ]; then
+  mkdir -p /var/run/mysqld
+  chown mysql:mysql /var/run/mysqld
 fi
 
 if [ ! -d "${DATADIR}/mysql" ]; then
